@@ -9,29 +9,29 @@ The module is a production component of the `bignum-lib` family and preserves th
 
 ## Distribution
 
-The required `bignum-core` component is included as a Git submodule at `libs/bignum-core`. The Makefile also links the distribution archives of the supporting `bignum-add-u64` and `bignum-cmp` components when they are present in `libs/`.
+`bignum-free` has two project-local dependencies. The first is `bignum-core`, which is required to compile the public API because it defines `bignum_t` and `BIGNUM_CAPACITY`. The second is the pinned `benchmark-framework` distribution, which is required only by the benchmark adapters, ST/MT runners, JSON matrix commands, and benchmark statistics workflow. The free operation itself requires no additional arithmetic module.
 
-| Component | Expected location | Purpose |
-|---|---|---|
-| `bignum-core` | `libs/bignum-core` | Defines `bignum_t`, `BIGNUM_CAPACITY`, and common primitives |
-| `bignum-add-u64` | `libs/bignum-add-u64/dist` | Static library used by the module dependency graph |
-| `bignum-cmp` | `libs/bignum-cmp/dist` | Static library used by the module dependency graph |
-| `benchmark-framework` | `libs/benchmark-framework/dist` | Pinned public `v1.0.0` flat C11 distribution with public header, static library, matrix/statistics tools, profiles, and documentation |
+| Component | Required for | Expected location | Purpose |
+|---|---|---|---|
+| `bignum-core` | Library and tests | `libs/bignum-core` | Git submodule defining `bignum_t` and `BIGNUM_CAPACITY` |
+| `benchmark-framework v1.0.0` | Benchmarks only | `libs/benchmark-framework/dist` | Public header, static framework library, matrix/statistics tools, and benchmark documentation |
 
-Clone the repository with its submodule:
+The generated product distribution is created by `make dist CONFIG=release` and contains the public `bignum_free.h`, `libbignum_free.a`, `LICENSE`, `README.md`, and the distribution runner source. It does not bundle the `bignum-core` submodule or the benchmark framework; those remain build-time project dependencies.
+
+Clone the repository with the required submodule:
 
 ```bash
 git clone --recurse-submodules https://github.com/kirill-bayborodov/bignum-free.git
 cd bignum-free
 ```
 
-For an existing clone, initialize all submodules with:
+For an existing clone, initialize the submodule with:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-If the linker reports missing `-lbignum_add_u64` or `-lbignum_cmp`, build or provide the matching component distributions so that the archives are available at the paths shown above.
+Before running benchmark targets, ensure that `libs/benchmark-framework/dist` contains `benchmark_framework.h`, `libbenchmark_framework.a`, and the matrix/statistics tools. System build tools such as `gcc`, `yasm`, `make`, and `pthread` are documented separately in the Dependencies section.
 
 ## Features
 

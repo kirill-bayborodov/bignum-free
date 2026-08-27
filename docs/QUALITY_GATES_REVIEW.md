@@ -1,33 +1,59 @@
-# bignum_free Quality Gates Review
+# bignum_free Documentation Quality Gates Review
 
-## Scope
+## Review scope
 
-This review covers the public API, C11 reference implementation, x86-64 YASM implementation, tests, benchmark adapter, JSON manifests, companion guides, README, and integration contract.
+This review applies `docs/QUALITY_GATES_DOCUMENTATION_C11_JSON.md` to every documentation-bearing artifact in the repository. The review was repeated after the `Distribution` section was corrected to remove template-inherited arithmetic modules.
 
-| Artifact | Review evidence | Status |
+## Artifact-level checklist
+
+| Artifact | Required evidence | Result |
 |---|---|---|
-| `include/bignum_free.h` | Named status enum, ownership, NULL/error behavior, complete wipe postcondition, thread-safety and complexity documented | PASS |
-| `src/bignum_free.c` | C11 reference uses volatile byte stores over `sizeof(bignum_t)`; static helper and rationale documented | PASS |
-| `src/bignum_free.asm` | RDI/RAX ABI, 33-qword fixed wipe, caller-saved clobbers and no storage release documented | PASS |
-| `tests/test_bignum_free.c` | NULL, complete wipe, idempotence and post-wipe storage tests | PASS |
-| `tests/test_bignum_free_extra.c` | Fixed-seed randomized cases and guard-region oracle | PASS |
-| `tests/test_bignum_free_mt.c` | Eight independent workers and complete zero-state verification | PASS |
-| `tests/test_bignum_free_runner.c` | Public-header and linked distribution smoke test | PASS |
-| `tests/benchmark_adapter/test_bignum_free_benchmark_adapter.c` | Validation, reproducibility, operation and checksum tests | PASS |
-| `benchmarks/adapter/bignum_free_benchmark_adapter.[ch]` | Framework lifecycle, vocabulary, deterministic state and checksum contract documented | PASS |
-| `benchmarks/profiles/*.json` | Valid schema-versioned manifests with adjacent guides | PASS |
-| `README.md` | Free-specific API, build, tests, benchmark, ABI and ownership guidance | PASS |
+| `README.md` | Purpose, real dependencies, API, ownership, NULL policy, concurrency, build/test, benchmark and QG workflow are documented | PASS |
+| `include/bignum_free.h` | File contract, named status, parameter, return, pre/postconditions, warning, thread safety and complexity are documented | PASS |
+| `src/bignum_free.c` | C11 reference rationale, volatile wipe, helper contract and implementation boundary are documented | PASS |
+| `src/bignum_free.asm` | ABI registers, object layout, clobbers, fixed wipe count and no-deallocation behavior are documented | PASS |
+| `docs/Doxyfile` | Project identity is `bignum-free`; warnings and undocumented items are errors | PASS |
+| `docs/doxygen_asm_filter.py` | YASM symbol is exposed as `bignum_free`, not a template symbol | PASS |
+| `benchmarks/adapter/bignum_free_benchmark_adapter.[ch]` | Adapter lifecycle, validation, `free` vocabulary, deterministic state and checksum contract are documented | PASS |
+| `benchmarks/profiles/bignum_free_standard.json` | Schema version, six valid `free` profiles and adjacent guide are present | PASS |
+| `benchmarks/profiles/bignum_free_full.json` | Schema version, twelve valid `free` profiles and adjacent guide are present | PASS |
+| `benchmarks/profiles/*.json.md` | Purpose, schema, vocabulary, commands, modification rules, baseline and failure behavior are documented | PASS |
+| `tests/*.c` | Test artifact and case intent, deterministic seed, guard checks, NULL behavior and MT scope are documented | PASS |
+| `docs/QUALITY_GATES_DOCUMENTATION_C11_JSON.md` | Normative QG source is present and versioned with the module | PASS |
 
-## Functional and performance evidence
+## Distribution audit
 
-The release test target passes all five groups in both C11 and ASM modes. C11 coverage is measured separately from ASM using instrumented reference builds; the deterministic and extended suites execute all reference lines and branches. Standard benchmark matrices are run independently with `USE_ASM=no` and `USE_ASM=yes` using the same manifest and controlled parameters.
+The README `Distribution` section now lists only the two actual project-local dependencies:
 
-The ASM implementation uses a fixed `REP STOSQ` sequence over 32 words plus `len`, while the C11 reference uses volatile byte stores. This is an intentionally independent implementation and is expected to favor ASM for the fixed-size wipe kernel; end-to-end measurements must still distinguish callback and framework overhead from kernel time.
+| Component | Role | Path |
+|---|---|---|
+| `bignum-core` | Defines `bignum_t` and `BIGNUM_CAPACITY`; required by library and tests | `libs/bignum-core` |
+| `benchmark-framework v1.0.0` | Required only by benchmark adapters, runners and matrix/statistics tools | `libs/benchmark-framework/dist` |
 
-## Restrictions and reproducibility
+No additional arithmetic module is required by `bignum-free`. The generated product distribution is produced by `make dist CONFIG=release` and contains the module header, static library, license, README and distribution runner; build-time submodules are not bundled.
 
-The frozen Makefile and CI configuration are not modified. Benchmark-framework is consumed from `libs/benchmark-framework/dist`. Benchmark reports record manifest, seed, repetition, iteration, ST/MT mode, and implementation configuration. Invalid profiles and NULL API input are tested as error paths, not mixed into successful performance aggregates.
+## Executed gates
+
+The following checks were executed after the documentation correction:
+
+```text
+Doxygen with WARN_AS_ERROR       PASS
+make lint                        PASS
+C11 test suite                   PASS — 0 / 5 failed
+ASM test suite                   PASS — 0 / 5 failed
+Standard JSON validation         PASS — 6 profiles
+Full JSON validation             PASS — 12 profiles
+README/profile consistency       PASS
+Local README link validation     PASS
+Stale template/operation scan    PASS outside frozen Makefile
+Makefile/CI diff                 PASS — no changes
+git diff --check                 PASS
+```
+
+## Blocking criteria review
+
+No stale template symbol, obsolete operation vocabulary, contradictory ownership statement, undocumented ABI register, invalid JSON example, missing companion guide, broken local link, undocumented benchmark variable, unsupported performance claim or non-English production documentation remains in the reviewed artifacts. The frozen Makefile retains legacy help-text references from the template; it was intentionally not modified under the repository restriction and is excluded from the documentation artifact correction.
 
 ## Decision
 
-The artifact review is complete when the final C11/ASM tests, coverage report, lint, JSON validation, benchmark matrices, and `git diff --check` all pass on the commit under review.
+The documentation Quality Gate is **PASS** for the current working tree. The remaining README change is limited to the corrected `Distribution` section and is ready for commit/push when explicitly requested.
