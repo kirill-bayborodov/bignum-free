@@ -201,7 +201,7 @@ bin/bench_bignum_free \
   [--iterations N] [--warmup N] [--data-count N] [--seed N]
 ```
 
-`--data-mode` preserves the three legacy scenarios. The independent `--input-kind`, `--operation-kind`, and `--size-profile` parameters select a custom profile and report `data_mode=custom`. `operation_kind` is a generic transport name, but the bignum adapter accepts only documented `clear-*` vocabulary and maps it to the actual bignum clear path.
+`--data-mode` preserves the three legacy scenarios. The independent `--input-kind`, `--operation-kind`, and `--size-profile` parameters select a custom profile and report `data_mode=custom`. `operation_kind` is a generic transport name, but the bignum adapter accepts only the documented `free` value and maps it to the complete representation wipe.
 
 | Variable | Default | Meaning |
 |---|---:|---|
@@ -274,7 +274,7 @@ For a fair one-thread/two-thread comparison, keep the total work and seed consta
   --data-mode mixed
 ```
 
-The reusable benchmark implementation is the public `v1.0.0` flat distribution under `libs/benchmark-framework/dist`. The project-local ST and MT sources include `benchmark_framework.h` and link `libbenchmark_framework.a`; matrix/statistics tools are consumed from `dist/tools/`. The adapter validates bignum vocabulary, constructs deterministic `bignum_t` records, chooses representable clears, and maps `bignum_free_status_t` to the named framework callback status.
+The reusable benchmark implementation is the public `v1.0.0` flat distribution under `libs/benchmark-framework/dist`. The project-local ST and MT sources include `benchmark_framework.h` and link `libbenchmark_framework.a`; matrix/statistics tools are consumed from `dist/tools/`. The adapter validates the `free` vocabulary, constructs deterministic `bignum_t` records, performs the complete wipe, and maps `bignum_free_status_t` to the named framework callback status.
 
 ## Perf workflow
 
@@ -403,6 +403,14 @@ make lint
 ```
 
 Performance changes should include reproducible benchmark parameters, matching ST/MT evidence, and a comparison that uses the same mode, seed, total work, thread count, CPU affinity, and counter configuration.
+
+## Documentation Quality Gates
+
+This README and the adjacent documentation artifacts follow `docs/QUALITY_GATES_DOCUMENTATION_C11_JSON.md`. A change is documentation-complete only when the reader can identify the purpose, public contract, ownership, NULL policy, aliasing and concurrency rules, algorithmic rationale, ABI boundary, error behavior, build/test commands, benchmark protocol, and reproducibility requirements without reading the implementation.
+
+Before merge, the following artifacts must be reviewed together: `include/bignum_free.h`, C11 and YASM sources, deterministic/extended/MT/integration tests, benchmark adapter, both JSON manifests with their `.json.md` guides, `docs/Doxyfile`, and this README. Public functions require complete Doxygen `@brief`, `@details`, parameter, return, precondition, postcondition, thread-safety, and complexity documentation. Examples must be copyable, use the actual one-argument `bignum_free` API, and describe that the operation clears contents without deallocating storage.
+
+The documentation gate is blocking for stale template/operation names, contradictory status or ownership semantics, undocumented ABI registers, invalid JSON examples, missing companion guides, broken links, undocumented benchmark variables, claims unsupported by tests or measurements, non-English production comments, and `git diff --check` failures. Run `make lint`, `doxygen docs/Doxyfile`, both C11/ASM test modes, JSON validation, and the relevant benchmark matrix before accepting a documentation change.
 
 ## License
 
