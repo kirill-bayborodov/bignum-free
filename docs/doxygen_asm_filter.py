@@ -11,8 +11,8 @@ def main() -> int:
         line = raw.strip()
         if line.startswith(";"):
             print("//" + line[1:])
-        elif line == "global bignum_template":
-            print("void bignum_template(void);")
+        elif line == "global bignum_free":
+            print("bignum_free_status_t bignum_free(bignum_t *num);")
         else:
             print()
     return 0

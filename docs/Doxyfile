@@ -1,6 +1,6 @@
-# Reproducible documentation audit for bignum-template.
-PROJECT_NAME           = bignum-template
-PROJECT_NUMBER         = 1.1.0
+# Reproducible documentation audit for bignum-free.
+PROJECT_NAME           = bignum-free
+PROJECT_NUMBER         = 0.1.0
 OUTPUT_DIRECTORY       = build/docs
 CREATE_SUBDIRS         = NO
 INPUT                  = include src benchmarks tests
